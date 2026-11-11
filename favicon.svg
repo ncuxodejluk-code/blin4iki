@@ -1,0 +1,44 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Стопка блинов">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff8ec"/>
+      <stop offset="1" stop-color="#f6e3c8"/>
+    </linearGradient>
+    <linearGradient id="pancake" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7c377"/>
+      <stop offset="1" stop-color="#e39a3f"/>
+    </linearGradient>
+    <linearGradient id="pancakeTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd18d"/>
+      <stop offset="1" stop-color="#f2ae5c"/>
+    </linearGradient>
+    <linearGradient id="butter" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff0b8"/>
+      <stop offset="1" stop-color="#f7d268"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="32" cy="32" r="31" fill="url(#bg)"/>
+  <circle cx="32" cy="32" r="30.5" fill="none" stroke="#ecd8ba" stroke-width="1"/>
+
+  <!-- нижний блин -->
+  <ellipse cx="32" cy="47.5" rx="21" ry="6.5" fill="#b9671a"/>
+  <ellipse cx="32" cy="44" rx="21" ry="6.5" fill="url(#pancake)"/>
+
+  <!-- средний блин -->
+  <ellipse cx="32" cy="40.5" rx="21" ry="6.5" fill="#b9671a"/>
+  <ellipse cx="32" cy="37" rx="21" ry="6.5" fill="url(#pancake)"/>
+
+  <!-- верхний блин -->
+  <ellipse cx="32" cy="33.5" rx="21" ry="6.5" fill="#b9671a"/>
+  <ellipse cx="32" cy="30" rx="21" ry="6.5" fill="url(#pancakeTop)"/>
+
+  <!-- кусочек масла -->
+  <rect x="24.5" y="19.5" width="15" height="8.5" rx="2.8" fill="url(#butter)" stroke="#e0a93a" stroke-width="1.3"/>
+  <path d="M27.5 21.3h9" stroke="#fffbe0" stroke-width="1.3" stroke-linecap="round" opacity=".95"/>
+
+  <!-- пар -->
+  <path d="M26.5 16.5c-2.1-2.6 1.9-3.8-.2-6.4" fill="none" stroke="#cfb491" stroke-width="2.2" stroke-linecap="round" opacity=".85"/>
+  <path d="M37.5 16.5c-2.1-2.6 1.9-3.8-.2-6.4" fill="none" stroke="#cfb491" stroke-width="2.2" stroke-linecap="round" opacity=".85"/>
+</svg>
+
