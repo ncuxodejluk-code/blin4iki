@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Калькулятор блинов на молоке с водой</title>
+<script>
+(function(){
+  var t = null;
+  try { t = localStorage.getItem('bliny-theme'); } catch(e){}
+  if (t !== 'dark' && t !== 'light'){
+    t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#f6f1e8;
+    --bg-glow:#fff6e8;
+    --card:#fffdf9;
+    --ink:#241a10;
+    --muted:#7a6a58;
+    --line:#e7ddcf;
+    --line-soft:#f0e8dc;
+    --accent:#b45309;
+    --accent-soft:#fdebd7;
+    --accent-ink:#8a4106;
+    --qty:#3a2c1d;
+    --tabs-bg:#f1e8dc;
+    --tab-active:#fffdf9;
+    --chip-active-border:#f3c99b;
+    --temp-bg:#f2f7f2;
+    --temp-ink:#2f6b43;
+    --temp-border:#d8e8dc;
+    --summary-bg:#fdebd7;
+    --summary-ink:#7a3d05;
+    --summary-border:#f6d7b3;
+    --warn-bg:#fff8e8;
+    --warn-ink:#6b4a12;
+    --warn-border:#f3dfb6;
+    --done-bg:#eef7ef;
+    --done-ink:#2f6b43;
+    --done-border:#cfe6d4;
+    --btn-bg:#ffffff;
+    --shadow:0 1px 2px rgba(36,26,16,.04), 0 8px 24px -18px rgba(36,26,16,.35);
+  }
+  [data-theme="dark"]{
+    color-scheme: dark;
+    --bg:#14110d;
+    --bg-glow:rgba(255,170,90,.07);
+    --card:#1d1813;
+    --ink:#f3e8da;
+    --muted:#a3927d;
+    --line:#342b22;
+    --line-soft:#2a221a;
+    --accent:#f0a35a;
+    --accent-soft:#3a2a18;
+    --accent-ink:#ffcf9a;
+    --qty:#e8dbc9;
+    --tabs-bg:#241d16;
+    --tab-active:#30261c;
+    --chip-active-border:#6b4a24;
+    --temp-bg:#1c2a21;
+    --temp-ink:#9fd3ae;
+    --temp-border:#2c4032;
+    --summary-bg:#332413;
+    --summary-ink:#ffd7a6;
+    --summary-border:#4a3419;
+    --warn-bg:#2c2314;
+    --warn-ink:#e9cb92;
+    --warn-border:#46371c;
+    --done-bg:#1e2c21;
+    --done-ink:#a7d8b4;
+    --done-border:#2f4434;
+    --btn-bg:#241d16;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -18px rgba(0,0,0,.9);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(1100px 380px at 50% -120px, var(--bg-glow) 0%, rgba(255,246,232,0) 60%),
+      var(--bg);
+    color:var(--ink);
+    font:16px/1.55 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    transition:background-color .25s ease, color .25s ease;
+  }
+  .wrap{max-width:780px;margin:0 auto;padding:32px 16px 72px}
+  header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+  header h1{font-size:clamp(24px,4vw,32px);margin:0 0 6px;letter-spacing:-.02em}
+  header p{margin:0;color:var(--muted);max-width:60ch}
+  .theme-toggle{
+    flex:0 0 auto;width:42px;height:42px;border-radius:12px;
+    border:1px solid var(--line);background:var(--card);color:var(--muted);
+    cursor:pointer;display:grid;place-items:center;padding:0;
+    transition:color .15s, border-color .15s, background-color .25s;
+  }
+  .theme-toggle:hover{color:var(--accent);border-color:var(--accent)}
+  .theme-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .theme-toggle svg{width:20px;height:20px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .theme-toggle .icon-sun{display:none}
+  [data-theme="dark"] .theme-toggle .icon-sun{display:block}
+  [data-theme="dark"] .theme-toggle .icon-moon{display:none}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:18px;
+    margin-top:18px;
+    box-shadow:var(--shadow);
+    transition:background-color .25s ease, border-color .25s ease;
+  }
+  h2{font-size:17px;margin:0 0 12px;letter-spacing:-.01em}
+  .tabs{display:flex;gap:6px;background:var(--tabs-bg);padding:4px;border-radius:12px;margin-bottom:16px;transition:background-color .25s ease}
+  .tab{
+    flex:1;border:0;background:transparent;padding:10px 12px;border-radius:9px;
+    font:inherit;font-weight:600;color:var(--muted);cursor:pointer;transition:.15s;
+  }
+  .tab.active{background:var(--tab-active);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+  .tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .field{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .field label{font-weight:600}
+  .amount{display:flex;align-items:baseline;gap:8px}
+  input[type=number]{
+    width:150px;font:inherit;font-weight:700;font-size:22px;
+    padding:8px 10px;border:1px solid var(--line);border-radius:10px;
+    background:var(--card);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums;
+  }
+  input[type=number]:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+  .unit{color:var(--muted);font-weight:600}
+  input[type=range]{width:100%;margin:16px 0 10px;accent-color:var(--accent)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    border:1px solid var(--line);background:var(--btn-bg);border-radius:999px;
+    padding:6px 12px;font:inherit;font-size:14px;cursor:pointer;color:var(--muted);
+    transition:.15s;font-variant-numeric:tabular-nums;
+  }
+  .chip:hover{border-color:var(--accent);color:var(--accent)}
+  .chip.active{background:var(--accent-soft);border-color:var(--chip-active-border);color:var(--accent-ink);font-weight:600}
+  table{width:100%;border-collapse:collapse;margin-top:2px}
+  th{
+    text-align:left;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line);
+  }
+  td{padding:11px 8px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+  tr:last-child td{border-bottom:0}
+  td.qty{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;color:var(--qty)}
+  td.qty .num{color:var(--accent);font-weight:700}
+  .temp{
+    display:inline-block;font-size:12.5px;background:var(--temp-bg);color:var(--temp-ink);
+    border:1px solid var(--temp-border);padding:2px 8px;border-radius:999px;white-space:nowrap;
+  }
+  .temp.none{background:transparent;border-color:transparent;color:var(--muted);padding:0}
+  .summary{
+    margin-top:14px;background:var(--summary-bg);border:1px solid var(--summary-border);
+    border-radius:12px;padding:12px 14px;font-weight:600;color:var(--summary-ink);
+  }
+  .note{margin:10px 0 0;font-size:14px;color:var(--muted)}
+  .note b{color:var(--qty);font-weight:600}
+  .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  button.ghost{
+    border:1px solid var(--line);background:var(--btn-bg);border-radius:10px;padding:8px 14px;
+    font:inherit;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;transition:.15s;
+  }
+  button.ghost:hover{border-color:var(--accent);color:var(--accent)}
+  button.ghost.done{background:var(--done-bg);border-color:var(--done-border);color:var(--done-ink)}
+  details{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:0 16px;background:var(--card);transition:background-color .25s ease, border-color .25s ease}
+  summary{cursor:pointer;padding:14px 0;font-weight:700;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";float:right;color:var(--accent);font-size:20px;line-height:1.1}
+  details[open] summary::after{content:"–"}
+  details h3{font-size:15px;margin:0 0 8px}
+  details p, details li{font-size:15px;color:var(--qty)}
+  details ol{margin:0;padding-left:20px}
+  details ol li{margin-bottom:10px}
+  details .block{margin-bottom:18px}
+  details .block:last-child{margin-bottom:14px}
+  .warn{
+    background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:12px;
+    padding:12px 14px;font-size:15px;color:var(--warn-ink);margin:10px 0 0;
+  }
+  .warn b{color:var(--warn-ink);font-weight:700}
+  footer{margin-top:22px;font-size:13px;color:var(--muted);text-align:center}
+  @media (max-width:520px){
+    .tabs{gap:4px}
+    .tab{padding:9px 6px;font-size:13px}
+    th:nth-child(3), td:nth-child(3){display:none}
+    td, th{padding-left:4px;padding-right:4px}
+    input[type=number]{width:120px;font-size:20px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>Блины на молоке с водой</h1>
+      <p>Классический рецепт без соды и разрыхлителя. Все количества — в граммах и миллилитрах.
+         Введите объём теста, количество молока или муки — остальное пересчитается.</p>
+    </div>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему" title="Светлая / тёмная тема">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+  </header>
+
+  <section class="card">
+    <div class="tabs" role="tablist" aria-label="Способ расчёта">
+      <button class="tab active" type="button" data-mode="batter" role="tab" aria-selected="true">Объём теста</button>
+      <button class="tab" type="button" data-mode="milk" role="tab" aria-selected="false">Молоко</button>
+      <button class="tab" type="button" data-mode="flour" role="tab" aria-selected="false">Мука</button>
+    </div>
+
+    <div class="field">
+      <label for="amount" id="inputLabel">Объём теста</label>
+      <div class="amount">
+        <input id="amount" type="number" inputmode="decimal" min="100" max="5000" step="10" value="1150" aria-describedby="inputUnit">
+        <span class="unit" id="inputUnit">мл</span>
+      </div>
+    </div>
+
+    <input id="slider" type="range" min="100" max="5000" step="10" value="1150" aria-label="Количество">
+
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="card">
+    <h2>Ингредиенты</h2>
+    <table>
+      <thead>
+        <tr><th>Ингредиент</th><th>Количество</th><th>Температура</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="summary" id="summary"></div>
+    <p class="note" id="eggNote"></p>
+    <p class="note">Плотность теста ≈1 кг/л, поэтому вес и объём почти совпадают — можно отвешивать на весах.</p>
+    <div class="actions">
+      <button class="ghost" type="button" id="copyBtn">Скопировать рецепт</button>
+      <button class="ghost" type="button" id="resetBtn">Сбросить</button>
+    </div>
+  </section>
+
+  <details>
+    <summary>Температура ингредиентов — важно</summary>
+    <div class="block">
+      <div class="warn"><b>Молоко и яйца — 20–25 °C, не из холодильника.</b> Холодные яйца и молоко дают комки, тесто хуже связывается и рвётся при перевороте. Достать за 1–2 часа. Быстро: яйца опустить в миску с водой 40 °C на 10 минут; закрытую бутылку молока — в тёплую воду на 10–15 минут (или микроволновка 30–40 секунд, до 35–40 °C, не выше).</div>
+      <div class="warn"><b>Вода — 40–50 °C.</b> Не кипяток: он «сварит» яйца хлопьями. Тёплая вода помогает муке разойтись без комков.</div>
+      <div class="warn"><b>Масло — растопленное, 30–40 °C.</b> Горячее масло (выше 60 °C) свернёт яйца при вливании.</div>
+      <div class="warn"><b>Сковорода — 180–200 °C.</b> Капля воды должна шипеть и испаряться за пару секунд.</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Пошаговая инструкция</summary>
+    <div class="block">
+      <ol>
+        <li><b>Подготовка.</b> Яйца и молоко — на стол заранее, чтобы прогрелись. Муку просейте дважды: без разрыхлителя это единственный способ насытить её воздухом.</li>
+        <li><b>Основа.</b> В глубокой миске взбейте яйца с сахаром и солью — 30–60 секунд, только до растворения. Пышная пена не нужна: она даст крупные пузыри и рваные дыры.</li>
+        <li><b>Половина молока.</b> Влейте половину нормы молока, размешайте.</li>
+        <li><b>Мука.</b> Всыпьте муку в 2–3 приёма, каждый раз размешивая венчиком от центра к краям. Получится густое тесто — это нормально и как раз предотвращает комки.</li>
+        <li><b>Разведение.</b> Долейте оставшееся молоко, затем воду 40–50 °C тонкой струйкой при постоянном помешивании. Тесто станет жидким, как сливки 18%.</li>
+        <li><b>Масло.</b> Влейте растопленное масло тонкой струйкой, интенсивно помешивая.</li>
+        <li><b>Отдых.</b> Накройте и оставьте на 20–30 минут при комнатной температуре. Здесь тесто «доходит»: мука набухает, клейковина расслабляется — блины не рвутся.</li>
+        <li><b>Проверка консистенции.</b> Тесто стекает с венчика ровной струёй, оставляя тонкий след. Густовато — влейте 15 мл воды; жидковато — добавьте 10 г муки.</li>
+        <li><b>Жарка.</b> Сковорода Ø24–26 см, средний огонь или чуть выше, прогрев 1–2 минуты. Первый блин — смазать 5 мл масла кисточкой, дальше не нужно (масло уже в тесте).</li>
+        <li><b>Блин.</b> Наливайте 60 мл теста на Ø24 см, быстро распределяйте вращением. Жарить 40–50 секунд до сухих кружевных краёв и румяного низа, перевернуть лопаткой — ещё 15–25 секунд.</li>
+        <li><b>Стопка.</b> Складывайте стопкой, по желанию промазывая топлёным маслом (5–10 г на 4–5 блинов). Пока жарите, тесто может густеть — добавьте 15–30 мл воды и размешайте.</li>
+      </ol>
+    </div>
+    <div class="block">
+      <h3>Если что-то пошло не так</h3>
+      <ul>
+        <li><b>Рвутся при перевороте</b> — холодные ингредиенты, мало отдыха, слишком тонкий слой или рано перевернули. Дайте тесту постоять ещё 10 минут.</li>
+        <li><b>Комки</b> — муку всыпали всю сразу. Лечится: процедить через сито или пробить блендером 10 секунд, потом дать отдохнуть.</li>
+        <li><b>Крупные дыры</b> — перевзбили яйца или перегрета сковорода.</li>
+        <li><b>Бледные и сухие</b> — слабый нагрев, блин «сушится», а не жарится.</li>
+        <li><b>Мелкие дырочки и кружево</b> — это норма и признак правильного теста, а не брак.</li>
+      </ul>
+    </div>
+  </details>
+
+  <footer>Хранятся до 2 суток в холодильнике под плёнкой; замораживаются с пергаментом между блинами.</footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* CALC-START */
+  var BASE_BATTER = 1150;   // мл теста из базовой рецептуры
+  var BASE_MILK = 500;      // мл молока в базовой рецептуре
+  var K = BASE_BATTER / BASE_MILK; // 2,3 мл теста на 1 мл молока
+
+  function compute(mode, amount){
+    var milk;
+    if (mode === 'milk') { milk = amount; }
+    else if (mode === 'flour') { milk = amount / 0.5; } // 250 г муки на 500 мл молока
+    else { milk = amount / K; }
+    var r = {
+      milk: milk,
+      milkG: milk * 1.03,
+      water: milk * 0.4,
+      flour: milk * 0.5,
+      eggsG: milk * 0.2,
+      eggsN: milk / 250,
+      sugar: milk * 0.03,
+      salt: milk * 0.006,
+      butter: milk * 0.06,
+      batter: milk * K
+    };
+    r.total = r.milkG + r.water + r.flour + r.eggsG + r.sugar + r.salt + r.butter;
+    return r;
+  }
+
+  function fmt(v, unit){
+    if (!isFinite(v)) return '—';
+    var n = (v >= 100) ? Math.round(v) : Math.round(v * 10) / 10;
+    return n.toLocaleString('ru-RU') + '\u00a0' + unit;
+  }
+
+  function plates(batter, per){
+    return Math.floor(batter / per);
+  }
+  /* CALC-END */
+
+  var state = { mode: 'batter', amount: 1150 };
+
+  var input = document.getElementById('amount');
+  var slider = document.getElementById('slider');
+  var chips = document.getElementById('chips');
+  var rows = document.getElementById('rows');
+  var summary = document.getElementById('summary');
+  var eggNote = document.getElementById('eggNote');
+  var inputLabel = document.getElementById('inputLabel');
+  var inputUnit = document.getElementById('inputUnit');
+  var copyBtn = document.getElementById('copyBtn');
+  var resetBtn = document.getElementById('resetBtn');
+  var themeToggle = document.getElementById('themeToggle');
+  var tabs = document.querySelectorAll('.tab');
+
+  var MODES = {
+    batter: { label: 'Объём теста', unit: 'мл', min: 100, max: 5000, step: 10, preset: 1150, chips: [500, 1000, 1150, 1500, 2000] },
+    milk:   { label: 'Молоко',      unit: 'мл', min: 50,  max: 2500, step: 10, preset: 500,  chips: [250, 500, 750, 1000] },
+    flour:  { label: 'Мука',        unit: 'г',  min: 50,  max: 2500, step: 5,  preset: 250,  chips: [100, 250, 500, 750, 1000] }
+  };
+
+  function clamp(v, a, b){ return Math.min(b, Math.max(a, v)); }
+
+  /* ---------- тема ---------- */
+  function applyTheme(t){
+    document.documentElement.setAttribute('data-theme', t);
+    var label = (t === 'dark') ? 'Включить светлую тему' : 'Включить тёмную тему';
+    themeToggle.setAttribute('aria-label', label);
+    themeToggle.setAttribute('title', (t === 'dark') ? 'Светлая тема' : 'Тёмная тема');
+  }
+  applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
+  themeToggle.addEventListener('click', function(){
+    var next = (document.documentElement.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
+    applyTheme(next);
+    try { localStorage.setItem('bliny-theme', next); } catch(e){}
+  });
+
+  /* ---------- расчёт ---------- */
+  function renderChips(){
+    var m = MODES[state.mode];
+    chips.innerHTML = '';
+    m.chips.forEach(function(v){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip' + (Math.abs(v - state.amount) < 0.5 ? ' active' : '');
+      b.textContent = v.toLocaleString('ru-RU') + '\u00a0' + m.unit;
+      b.addEventListener('click', function(){
+        state.amount = v;
+        syncInputs();
+        render();
+      });
+      chips.appendChild(b);
+    });
+  }
+
+  function syncInputs(){
+    var m = MODES[state.mode];
+    input.min = m.min; input.max = m.max; input.step = m.step;
+    input.value = Math.round(state.amount);
+    slider.min = m.min; slider.max = m.max; slider.step = m.step;
+    slider.value = clamp(state.amount, m.min, m.max);
+    inputLabel.textContent = m.label;
+    inputUnit.textContent = m.unit;
+    renderChips();
+  }
+
+  function tempCell(t){
+    return t ? '<span class="temp">' + t + '</span>' : '<span class="temp none">—</span>';
+  }
+
+  function render(){
+    var r = compute(state.mode, state.amount);
+    var valid = isFinite(state.amount) && state.amount > 0;
+
+    if (!valid){
+      rows.innerHTML = '<tr><td colspan="3" class="note">Укажите количество</td></tr>';
+      summary.textContent = '—';
+      eggNote.textContent = '';
+      return;
+    }
+
+    var eggsN = Math.round(r.eggsN);
+    var data = [
+      ['Молоко', '<span class="num">' + fmt(r.milk, 'мл') + '</span> · ' + fmt(r.milkG, 'г'), '20–25 °C'],
+      ['Вода', '<span class="num">' + fmt(r.water, 'мл') + '</span>', '40–50 °C'],
+      ['Мука пшеничная в/с', '<span class="num">' + fmt(r.flour, 'г') + '</span>', '20 °C, сухая'],
+      ['Яйца', '<span class="num">' + fmt(r.eggsG, 'г') + '</span> · ' + eggsN + ' шт', '20–22 °C'],
+      ['Сахар', '<span class="num">' + fmt(r.sugar, 'г') + '</span>', ''],
+      ['Соль', '<span class="num">' + fmt(r.salt, 'г') + '</span>', ''],
+      ['Масло топлёное или растительное', '<span class="num">' + fmt(r.butter, 'г') + '</span>', '30–40 °C']
+    ];
+
+    rows.innerHTML = data.map(function(row){
+      return '<tr><td>' + row[0] + '</td><td class="qty">' + row[1] + '</td><td>' + tempCell(row[2]) + '</td></tr>';
+    }).join('');
+
+    summary.innerHTML = 'Выход: <span style="white-space:nowrap">≈' + fmt(r.batter, 'мл') + '</span> теста (≈' + fmt(r.total, 'г') + ')'
+      + ' — это ' + plates(r.batter, 60) + ' блинов Ø24 см, '
+      + plates(r.batter, 45) + ' Ø20 см или '
+      + plates(r.batter, 80) + ' Ø28 см.';
+
+    var exact = r.eggsN.toFixed(2).replace('.', ',');
+    var tail = ' Муку корректируйте по консистенции: ±10 г.';
+    if (Math.abs(r.eggsN - eggsN) < 0.05){
+      eggNote.innerHTML = 'Яйца берутся целыми: <b>' + eggsN + ' шт</b> — ровно по рецепту.' + tail;
+    } else {
+      eggNote.innerHTML = 'Яйца удобнее брать целыми: ' + exact + ' шт — округлите до <b>' + eggsN + '</b>.'
+        + ' Остальные компоненты при этом не пересчитывайте.' + tail;
+    }
+  }
+
+  function setMode(next){
+    if (next === state.mode) return;
+    var r = compute(state.mode, state.amount);
+    state.mode = next;
+    var v = (next === 'milk') ? r.milk : (next === 'flour' ? r.flour : r.batter);
+    state.amount = Math.round(v / 10) * 10;
+    tabs.forEach(function(t){
+      var on = t.getAttribute('data-mode') === next;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    syncInputs();
+    render();
+  }
+
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){ setMode(t.getAttribute('data-mode')); });
+  });
+
+  input.addEventListener('input', function(){
+    var v = parseFloat(String(input.value).replace(',', '.'));
+    state.amount = isFinite(v) ? v : NaN;
+    if (isFinite(v)) slider.value = clamp(v, +slider.min, +slider.max);
+    render();
+  });
+  input.addEventListener('change', function(){
+    if (!isFinite(state.amount)) { state.amount = MODES[state.mode].preset; }
+    state.amount = clamp(state.amount, MODES[state.mode].min, MODES[state.mode].max);
+    syncInputs();
+    render();
+  });
+
+  slider.addEventListener('input', function(){
+    state.amount = +slider.value;
+    input.value = slider.value;
+    renderChips();
+    render();
+  });
+
+  resetBtn.addEventListener('click', function(){
+    state.mode = 'batter';
+    state.amount = MODES.batter.preset;
+    tabs.forEach(function(t){
+      var on = t.getAttribute('data-mode') === 'batter';
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    syncInputs();
+    render();
+  });
+
+  copyBtn.addEventListener('click', function(){
+    var r = compute(state.mode, state.amount);
+    var eggsN = Math.round(r.eggsN);
+    var lines = [
+      'Блины на молоке с водой — ' + fmt(r.batter, 'мл') + ' теста (≈' + fmt(r.total, 'г') + ')',
+      '',
+      'Молоко — ' + fmt(r.milk, 'мл') + ' (' + fmt(r.milkG, 'г') + '), 20–25 °C',
+      'Вода — ' + fmt(r.water, 'мл') + ', 40–50 °C',
+      'Мука пшеничная в/с — ' + fmt(r.flour, 'г') + ', 20 °C, сухая',
+      'Яйца — ' + fmt(r.eggsG, 'г') + ' (' + eggsN + ' шт), 20–22 °C',
+      'Сахар — ' + fmt(r.sugar, 'г'),
+      'Соль — ' + fmt(r.salt, 'г'),
+      'Масло топлёное или растительное — ' + fmt(r.butter, 'г') + ', 30–40 °C',
+      '',
+      'Выход: ' + plates(r.batter, 60) + ' блинов Ø24 см'
+    ];
+    var text = lines.join('\n');
+    function done(){
+      copyBtn.textContent = 'Скопировано';
+      copyBtn.classList.add('done');
+      setTimeout(function(){
+        copyBtn.textContent = 'Скопировать рецепт';
+        copyBtn.classList.remove('done');
+      }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, function(){ fallback(text, done); });
+    } else {
+      fallback(text, done);
+    }
+  });
+
+  function fallback(text, done){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  syncInputs();
+  render();
+})();
+</script>
+</body>
+</html>
