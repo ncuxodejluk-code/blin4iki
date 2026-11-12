@@ -249,12 +249,12 @@
     <div class="field">
       <label for="amount" id="inputLabel">Объём теста</label>
       <div class="amount">
-        <input id="amount" type="number" inputmode="decimal" min="100" max="5000" step="10" value="1150" aria-describedby="inputUnit">
+        <input id="amount" type="number" inputmode="decimal" min="100" max="5000" step="10" value="1250" aria-describedby="inputUnit">
         <span class="unit" id="inputUnit">мл</span>
       </div>
     </div>
 
-    <input id="slider" type="range" min="100" max="5000" step="10" value="1150" aria-label="Количество">
+    <input id="slider" type="range" min="100" max="5000" step="10" value="1250" aria-label="Количество">
 
     <div class="chips" id="chips"></div>
   </section>
@@ -294,12 +294,12 @@
         <li><b>Основа.</b> В глубокой миске взбейте яйца с сахаром и солью — 30–60 секунд, только до растворения. Пышная пена не нужна: она даст крупные пузыри и рваные дыры.</li>
         <li><b>Половина молока.</b> Влейте половину нормы молока, размешайте.</li>
         <li><b>Мука.</b> Всыпьте муку в 2–3 приёма, каждый раз размешивая венчиком от центра к краям. Получится густое тесто — это нормально и как раз предотвращает комки.</li>
-        <li><b>Разведение.</b> Долейте оставшееся молоко, затем воду 40–50 °C тонкой струйкой при постоянном помешивании. Тесто станет жидким, как сливки 18%.</li>
+        <li><b>Разведение.</b> Долейте оставшееся молоко, затем воду 40–50 °C тонкой струйкой при постоянном помешивании. Тесто станет жидким, как молоко 2,5–3%.</li>
         <li><b>Масло.</b> Влейте растопленное масло тонкой струйкой, интенсивно помешивая.</li>
         <li><b>Отдых.</b> Накройте и оставьте на 20–30 минут при комнатной температуре. Здесь тесто «доходит»: мука набухает, клейковина расслабляется — блины не рвутся.</li>
         <li><b>Проверка консистенции.</b> Тесто стекает с венчика ровной струёй, оставляя тонкий след. Густовато — влейте 15 мл воды; жидковато — добавьте 10 г муки.</li>
         <li><b>Жарка.</b> Сковорода Ø24–26 см, средний огонь или чуть выше, прогрев 1–2 минуты. Первый блин — смазать 5 мл масла кисточкой, дальше не нужно (масло уже в тесте).</li>
-        <li><b>Блин.</b> Наливайте 60 мл теста на Ø24 см, быстро распределяйте вращением. Жарить 40–50 секунд до сухих кружевных краёв и румяного низа, перевернуть лопаткой — ещё 15–25 секунд.</li>
+        <li><b>Блин.</b> Наливайте 50–55 мл теста на Ø24 см, быстро распределяйте вращением. Жарить 30–40 секунд до сухих кружевных краёв и румяного низа, перевернуть лопаткой — ещё 15–20 секунд.</li>
         <li><b>Стопка.</b> Складывайте стопкой, по желанию промазывая топлёным маслом (5–10 г на 4–5 блинов). Пока жарите, тесто может густеть — добавьте 15–30 мл воды и размешайте.</li>
       </ol>
     </div>
@@ -327,9 +327,9 @@
   'use strict';
 
   /* CALC-START */
-  var BASE_BATTER = 1150;   // мл теста из базовой рецептуры
+  var BASE_BATTER = 1250;   // мл теста из базовой рецептуры
   var BASE_MILK = 500;      // мл молока в базовой рецептуре
-  var K = BASE_BATTER / BASE_MILK; // 2,3 мл теста на 1 мл молока
+  var K = BASE_BATTER / BASE_MILK; // 2,5 мл теста на 1 мл молока
 
   function compute(mode, amount){
     var milk;
@@ -339,11 +339,11 @@
     var r = {
       milk: milk,
       milkG: milk * 1.03,
-      water: milk * 0.4,
+      water: milk * 0.64,
       flour: milk * 0.5,
       eggsG: milk * 0.2,
       eggsN: milk / 250,
-      sugar: milk * 0.03,
+      sugar: milk * 0.05,
       salt: milk * 0.006,
       butter: milk * 0.06,
       batter: milk * K
@@ -363,7 +363,7 @@
   }
   /* CALC-END */
 
-  var state = { mode: 'batter', amount: 1150 };
+  var state = { mode: 'batter', amount: 1250 };
 
   var input = document.getElementById('amount');
   var slider = document.getElementById('slider');
@@ -379,7 +379,7 @@
   var tabs = document.querySelectorAll('.tab');
 
   var MODES = {
-    batter: { label: 'Объём теста', unit: 'мл', min: 100, max: 5000, step: 10, preset: 1150, chips: [500, 1000, 1150, 1500, 2000] },
+    batter: { label: 'Объём теста', unit: 'мл', min: 100, max: 5000, step: 10, preset: 1250, chips: [500, 1000, 1250, 1500, 2000] },
     milk:   { label: 'Молоко',      unit: 'мл', min: 50,  max: 2500, step: 10, preset: 500,  chips: [250, 500, 750, 1000] },
     flour:  { label: 'Мука',        unit: 'г',  min: 50,  max: 2500, step: 5,  preset: 250,  chips: [100, 250, 500, 750, 1000] }
   };
@@ -460,9 +460,9 @@
     }).join('');
 
     summary.innerHTML = 'Выход: <span style="white-space:nowrap">≈' + fmt(r.batter, 'мл') + '</span> теста (≈' + fmt(r.total, 'г') + ')'
-      + ' — это ' + plates(r.batter, 60) + ' блинов Ø24 см, '
-      + plates(r.batter, 45) + ' Ø20 см или '
-      + plates(r.batter, 80) + ' Ø28 см.';
+      + ' — это ' + plates(r.batter, 50) + ' блинов Ø24 см, '
+      + plates(r.batter, 38) + ' Ø20 см или '
+      + plates(r.batter, 65) + ' Ø28 см.';
 
     var exact = r.eggsN.toFixed(2).replace('.', ',');
     var tail = ' Муку корректируйте по консистенции: ±10 г.';
@@ -539,7 +539,7 @@
       'Соль — ' + fmt(r.salt, 'г'),
       'Масло топлёное или растительное — ' + fmt(r.butter, 'г') + ', 30–40 °C',
       '',
-      'Выход: ' + plates(r.batter, 60) + ' блинов Ø24 см'
+      'Выход: ' + plates(r.batter, 50) + ' блинов Ø24 см'
     ];
     var text = lines.join('\n');
     function done(){
