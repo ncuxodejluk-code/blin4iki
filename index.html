@@ -17,9 +17,6 @@
     t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
   }
   document.documentElement.setAttribute('data-theme', t);
-  if (/YaBrowser/i.test(navigator.userAgent)) {
-    document.documentElement.classList.add('ya-browser');
-  }
 })();
 </script>
 <style>
@@ -213,7 +210,6 @@
   .to-top:active{opacity:.85}
   .to-top:focus{outline:none}
   .to-top:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-  html.ya-browser .to-top{display:none}
   .to-top svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
   @media (prefers-reduced-motion: reduce){
     .to-top{transition:none}
@@ -583,14 +579,18 @@
 
   /* ---------- кнопка «наверх» ---------- */
   var toTop = document.getElementById('toTop');
+  var touch = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
   var scrollQueued = false;
   function updateToTop(){
     scrollQueued = false;
-    toTop.classList.toggle('visible', window.scrollY > 400);
+    var doc = document.documentElement;
+    var nearBottom = window.innerHeight + window.scrollY >= doc.scrollHeight - 120;
+    toTop.classList.toggle('visible', window.scrollY > 400 && !(touch && nearBottom));
   }
   window.addEventListener('scroll', function(){
     if (!scrollQueued){ scrollQueued = true; window.requestAnimationFrame(updateToTop); }
   }, { passive: true });
+  window.addEventListener('resize', updateToTop);
   toTop.addEventListener('click', function(){
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
