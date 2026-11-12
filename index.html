@@ -252,12 +252,12 @@
     <div class="field">
       <label for="amount" id="inputLabel">Объём теста</label>
       <div class="amount">
-        <input id="amount" type="number" inputmode="decimal" min="100" max="5000" step="10" value="1250" aria-describedby="inputUnit">
+        <input id="amount" type="number" inputmode="decimal" min="100" max="5000" step="10" value="500" aria-describedby="inputUnit">
         <span class="unit" id="inputUnit">мл</span>
       </div>
     </div>
 
-    <input id="slider" type="range" min="100" max="5000" step="10" value="1250" aria-label="Количество">
+    <input id="slider" type="range" min="100" max="5000" step="10" value="500" aria-label="Количество">
 
     <div class="chips" id="chips"></div>
   </section>
@@ -366,7 +366,7 @@
   }
   /* CALC-END */
 
-  var state = { mode: 'batter', amount: 1250 };
+  var state = { mode: 'batter', amount: 500 };
 
   var input = document.getElementById('amount');
   var slider = document.getElementById('slider');
@@ -382,7 +382,7 @@
   var tabs = document.querySelectorAll('.tab');
 
   var MODES = {
-    batter: { label: 'Объём теста', unit: 'мл', min: 100, max: 5000, step: 10, preset: 1250, chips: [500, 1000, 1250, 1500, 2000] },
+    batter: { label: 'Объём теста', unit: 'мл', min: 100, max: 5000, step: 10, preset: 500, chips: [500, 1000, 1250, 1500, 2000] },
     milk:   { label: 'Молоко',      unit: 'мл', min: 50,  max: 2500, step: 10, preset: 500,  chips: [250, 500, 750, 1000] },
     flour:  { label: 'Мука',        unit: 'г',  min: 50,  max: 2500, step: 5,  preset: 250,  chips: [100, 250, 500, 750, 1000] }
   };
