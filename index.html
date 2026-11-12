@@ -181,7 +181,7 @@
   summary::after{content:"+";float:right;color:var(--accent);font-size:20px;line-height:1.1}
   details[open] summary::after{content:"–"}
   details h3{font-size:15px;margin:0 0 8px}
-  details p, details li{font-size:15px;color:var(--qty)}
+  details li{font-size:15px;color:var(--qty)}
   details ol{margin:0;padding-left:20px}
   details ol li{margin-bottom:10px}
   details .block{margin-bottom:18px}
@@ -256,12 +256,12 @@
     <div class="field">
       <label for="amount" id="inputLabel">Объём теста</label>
       <div class="amount">
-        <input id="amount" type="number" inputmode="decimal" min="100" max="5000" step="10" value="500" aria-describedby="inputUnit">
+        <input id="amount" type="number" inputmode="decimal" min="100" max="5000" step="10" aria-describedby="inputUnit">
         <span class="unit" id="inputUnit">мл</span>
       </div>
     </div>
 
-    <input id="slider" type="range" min="100" max="5000" step="10" value="500" aria-label="Количество">
+    <input id="slider" type="range" min="100" max="5000" step="10" aria-label="Количество">
 
     <div class="chips" id="chips"></div>
   </section>
@@ -334,9 +334,7 @@
   'use strict';
 
   /* CALC-START */
-  var BASE_BATTER = 1250;   // мл теста из базовой рецептуры
-  var BASE_MILK = 500;      // мл молока в базовой рецептуре
-  var K = BASE_BATTER / BASE_MILK; // 2,5 мл теста на 1 мл молока
+  var K = 2.5; // мл теста на 1 мл молока: 1250 мл из 500 мл
 
   function compute(mode, amount){
     var milk;
@@ -408,13 +406,14 @@
   });
 
   /* ---------- расчёт ---------- */
+  var chipEls = [];
   function renderChips(){
     var m = MODES[state.mode];
     chips.innerHTML = '';
-    m.chips.forEach(function(v){
+    chipEls = m.chips.map(function(v){
       var b = document.createElement('button');
       b.type = 'button';
-      b.className = 'chip' + (Math.abs(v - state.amount) < 0.5 ? ' active' : '');
+      b.className = 'chip';
       b.textContent = v.toLocaleString('ru-RU') + '\u00a0' + m.unit;
       b.addEventListener('click', function(){
         state.amount = v;
@@ -422,6 +421,14 @@
         render();
       });
       chips.appendChild(b);
+      return { el: b, value: v };
+    });
+    updateChipState();
+  }
+
+  function updateChipState(){
+    chipEls.forEach(function(c){
+      c.el.classList.toggle('active', Math.abs(c.value - state.amount) < 0.5);
     });
   }
 
@@ -471,14 +478,21 @@
       + plates(r.batter, 38) + ' Ø20 см или '
       + plates(r.batter, 65) + ' Ø28 см.';
 
-    var exact = r.eggsN.toFixed(2).replace('.', ',');
     var tail = ' Муку корректируйте по консистенции: ±10 г.';
     if (Math.abs(r.eggsN - eggsN) < 0.05){
       eggNote.innerHTML = 'Яйца берутся целыми: <b>' + eggsN + ' шт</b> — ровно по рецепту.' + tail;
     } else {
-      eggNote.innerHTML = 'Яйца удобнее брать целыми: ' + exact + ' шт — округлите до <b>' + eggsN + '</b>.'
-        + ' Остальные компоненты при этом не пересчитывайте.' + tail;
+      eggNote.innerHTML = 'Яйца удобнее брать целыми: ' + r.eggsN.toFixed(2).replace('.', ',')
+        + ' шт — округлите до <b>' + eggsN + '</b>. Остальные компоненты при этом не пересчитывайте.' + tail;
     }
+  }
+
+  function selectTab(mode){
+    tabs.forEach(function(t){
+      var on = t.getAttribute('data-mode') === mode;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
   }
 
   function setMode(next){
@@ -487,11 +501,7 @@
     state.mode = next;
     var v = (next === 'milk') ? r.milk : (next === 'flour' ? r.flour : r.batter);
     state.amount = Math.round(v / 10) * 10;
-    tabs.forEach(function(t){
-      var on = t.getAttribute('data-mode') === next;
-      t.classList.toggle('active', on);
-      t.setAttribute('aria-selected', on ? 'true' : 'false');
-    });
+    selectTab(next);
     syncInputs();
     render();
   }
@@ -516,18 +526,14 @@
   slider.addEventListener('input', function(){
     state.amount = +slider.value;
     input.value = slider.value;
-    renderChips();
+    updateChipState();
     render();
   });
 
   resetBtn.addEventListener('click', function(){
     state.mode = 'batter';
     state.amount = MODES.batter.preset;
-    tabs.forEach(function(t){
-      var on = t.getAttribute('data-mode') === 'batter';
-      t.classList.toggle('active', on);
-      t.setAttribute('aria-selected', on ? 'true' : 'false');
-    });
+    selectTab('batter');
     syncInputs();
     render();
   });
